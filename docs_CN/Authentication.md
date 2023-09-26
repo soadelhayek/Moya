@@ -9,7 +9,7 @@ HTTP身份验证是一个 username/password HTTP协议内置的验证方式. 如
 
 ```swift
 let provider = MoyaProvider<YourAPI>(plugins: [CredentialsPlugin { _ -> URLCredential? in
-        return URLCredential(user: "user", password: "passwd", persistence: .none)
+        URLCredential(user: "user", password: "passwd", persistence: .none)
     }
 ])
 ```
@@ -40,8 +40,24 @@ Moya提供一个 `AccessTokenPlugin` 来完成
 
 ```Swift
 let token = "eyeAm.AJsoN.weBTOKen"
-let authPlugin = AccessTokenPlugin { token }
+let authPlugin = AccessTokenPlugin { _ in token }
 let provider = MoyaProvider<YourAPI>(plugins: [authPlugin])
+```
+
+如果你使用 `MultiTarget` 且返回不同的令牌，你可以像下面这样:
+
+```swift
+let fooToken = "eyeAm.AJsoN.weBTOKen.foo"
+let barToken = "eyeAm.AJsoN.weBTOKen.bar"
+let authPlugin = AccessTokenPlugin { target in 
+    if target is FooService {
+        return fooToken    
+    } else if target is BarService {
+        return barToken
+    }
+    return ""
+}
+let provider = MoyaProvider<MultiTarget>(plugins: [authPlugin])
 ```
 
 `AccessTokenPlugin` 构造器接收一个`tokenClosure`闭包来负责返回一个可以被添加到request头部的令牌 。
@@ -52,17 +68,19 @@ let provider = MoyaProvider<YourAPI>(plugins: [authPlugin])
 extension YourAPI: TargetType, AccessTokenAuthorizable {
     case targetThatNeedsBearerAuth
     case targetThatNeedsBasicAuth
+    case targetThatNeedsCustomAuth
     case targetDoesNotNeedAuth
 
-    var authorizationType: AuthorizationType {
+    var authorizationType: AuthorizationType? {
         switch self {
             case .targetThatNeedsBearerAuth:
                 return .bearer
             case .targetThatNeedsBasicAuth:
                 return .basic
+            case .targetThatNeedsCustomAuth:
+                return .custom("CustomAuthorizationType")
             case .targetDoesNotNeedAuth:
-                return .none
-            }
+                return nil
         }
 }
 ```

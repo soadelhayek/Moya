@@ -3,6 +3,10 @@ import Nimble
 import RxSwift
 import OHHTTPStubs
 
+#if canImport(OHHTTPStubsSwift)
+import OHHTTPStubsSwift
+#endif
+
 @testable import Moya
 @testable import RxMoya
 
@@ -20,8 +24,8 @@ final class MoyaProviderRxSpec: QuickSpec {
 
                 _ = provider.rx.request(.zen).subscribe { event in
                     switch event {
-                    case .success:          called = true
-                    case .error(let error): fail("errored: \(error)")
+                    case .success:            called = true
+                    case .failure(let error): fail("errored: \(error)")
                     }
                 }
 
@@ -35,7 +39,7 @@ final class MoyaProviderRxSpec: QuickSpec {
                 _ = provider.rx.request(target).subscribe { event in
                     switch event {
                     case .success(let response):    responseData = response.data
-                    case .error(let error):         fail("errored: \(error)")
+                    case .failure(let error):       fail("errored: \(error)")
                     }
                 }
 
@@ -66,8 +70,8 @@ final class MoyaProviderRxSpec: QuickSpec {
 
                 _ = provider.rx.request(.zen).subscribe { event in
                     switch event {
-                    case .success:          fail("should have errored")
-                    case .error(let error): receivedError = error as? MoyaError
+                    case .success:            fail("should have errored")
+                    case .failure(let error): receivedError = error as? MoyaError
                     }
                 }
 
@@ -86,7 +90,7 @@ final class MoyaProviderRxSpec: QuickSpec {
                 _ = provider.rx.request(target).subscribe { event in
                     switch event {
                     case .success:  fail("we should have errored")
-                    case .error:    errored = true
+                    case .failure:  errored = true
                     }
                 }
 
@@ -98,8 +102,8 @@ final class MoyaProviderRxSpec: QuickSpec {
             var provider: MoyaProvider<GitHub>!
 
             beforeEach {
-                OHHTTPStubs.stubRequests(passingTest: {$0.url!.path == "/zen"}, withStubResponse: { _ in
-                    return OHHTTPStubsResponse(data: GitHub.zen.sampleData, statusCode: 200, headers: nil)
+                HTTPStubs.stubRequests(passingTest: {$0.url!.path == "/zen"}, withStubResponse: { _ in
+                    return HTTPStubsResponse(data: GitHub.zen.sampleData, statusCode: 200, headers: nil)
                 })
                 provider = MoyaProvider<GitHub>(trackInflights: true)
             }
@@ -119,7 +123,7 @@ final class MoyaProviderRxSpec: QuickSpec {
                         receivedResponse = response
                         expect(provider.inflightRequests.count).to(equal(1))
 
-                    case .error(let error):
+                    case .failure(let error):
                         fail("errored: \(error)")
                     }
                 }
@@ -131,7 +135,7 @@ final class MoyaProviderRxSpec: QuickSpec {
                         expect(receivedResponse).to(beIdenticalToResponse(response))
                         expect(provider.inflightRequests.count).to(equal(1))
 
-                    case .error(let error):
+                    case .failure(let error):
                         fail("errored: \(error)")
                     }
                 }
@@ -150,8 +154,8 @@ final class MoyaProviderRxSpec: QuickSpec {
                 try? FileManager.default.removeItem(at: file)
 
                 //`responseTime(-4)` equals to 1000 bytes at a time. The sample data is 4000 bytes.
-                OHHTTPStubs.stubRequests(passingTest: {$0.url!.path.hasSuffix("logo_github.png")}, withStubResponse: { _ in
-                    return OHHTTPStubsResponse(data: GitHubUserContent.downloadMoyaWebContent("logo_github.png").sampleData, statusCode: 200, headers: nil).responseTime(-4)
+                HTTPStubs.stubRequests(passingTest: {$0.url!.path.hasSuffix("logo_github.png")}, withStubResponse: { _ in
+                    return HTTPStubsResponse(data: GitHubUserContent.downloadMoyaWebContent("logo_github.png").sampleData, statusCode: 200, headers: nil).responseTime(-4)
                 })
                 provider = MoyaProvider<GitHubUserContent>()
             }
@@ -163,7 +167,7 @@ final class MoyaProviderRxSpec: QuickSpec {
                 let expectedNextResponseCount = 1
                 let expectedErrorEventsCount = 0
                 let expectedCompletedEventsCount = 1
-                let timeout = 5.0
+                let timeout = DispatchTimeInterval.seconds(5)
 
                 var nextProgressValues: [Double] = []
                 var nextResponseCount = 0
@@ -189,16 +193,16 @@ final class MoyaProviderRxSpec: QuickSpec {
             }
 
             describe("a custom callback queue") {
-                var stubDescriptor: OHHTTPStubsDescriptor!
+                var stubDescriptor: HTTPStubsDescriptor!
 
                 beforeEach {
-                    stubDescriptor = OHHTTPStubs.stubRequests(passingTest: {$0.url!.path == "/zen"}, withStubResponse: { _ in
-                        return OHHTTPStubsResponse(data: GitHub.zen.sampleData, statusCode: 200, headers: nil)
+                    stubDescriptor = HTTPStubs.stubRequests(passingTest: {$0.url!.path == "/zen"}, withStubResponse: { _ in
+                        return HTTPStubsResponse(data: GitHub.zen.sampleData, statusCode: 200, headers: nil)
                     })
                 }
 
                 afterEach {
-                    OHHTTPStubs.removeStub(stubDescriptor)
+                    HTTPStubs.removeStub(stubDescriptor)
                 }
 
                 describe("a provider with a predefined callback queue") {
@@ -216,17 +220,17 @@ final class MoyaProviderRxSpec: QuickSpec {
                     context("the callback queue is provided with the request") {
                         it("invokes the callback on the request queue") {
                             let requestQueue = DispatchQueue(label: UUID().uuidString)
-                            var callbackQueueLabel: String?
+                            let callbackQueueLabel = Atomic<String?>(wrappedValue: nil)
 
                             waitUntil(action: { completion in
                                 provider.rx.request(.zen, callbackQueue: requestQueue)
                                     .subscribe(onSuccess: { _ in
-                                        callbackQueueLabel = DispatchQueue.currentLabel
+                                        callbackQueueLabel.wrappedValue = DispatchQueue.currentLabel
                                         completion()
                                     }).disposed(by: disposeBag)
                             })
 
-                            expect(callbackQueueLabel) == requestQueue.label
+                            expect(callbackQueueLabel.wrappedValue) == requestQueue.label
                         }
                     }
 

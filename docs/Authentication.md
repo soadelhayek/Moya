@@ -11,7 +11,7 @@ when initializing your provider.
 
 ```swift
 let provider = MoyaProvider<YourAPI>(plugins: [CredentialsPlugin { _ -> URLCredential? in
-        return URLCredential(user: "user", password: "passwd", persistence: .none)
+        URLCredential(user: "user", password: "passwd", persistence: .none)
     }
 ])
 ```
@@ -42,9 +42,25 @@ There are two steps required to start using an `AccessTokenPlugin`.
 1. You need to add an `AccessTokenPlugin` to your `MoyaProvider` like this:
 ```Swift
 let token = "eyeAm.AJsoN.weBTOKen"
-let authPlugin = AccessTokenPlugin { token }
+let authPlugin = AccessTokenPlugin { _ in token }
 let provider = MoyaProvider<YourAPI>(plugins: [authPlugin])
 ```
+If you use `MultiTarget` with different token, you can do like this:
+
+```swift
+let fooToken = "eyeAm.AJsoN.weBTOKen.foo"
+let barToken = "eyeAm.AJsoN.weBTOKen.bar"
+let authPlugin = AccessTokenPlugin { target in 
+    if target is FooService {
+        return fooToken    
+    } else if target is BarService {
+        return barToken
+    }
+    return ""
+}
+let provider = MoyaProvider<MultiTarget>(plugins: [authPlugin])
+```
+
 The `AccessTokenPlugin` initializer accepts a `tokenClosure` that is responsible
 for returning the token to be applied to the header of the request.
 
@@ -57,7 +73,7 @@ extension YourAPI: TargetType, AccessTokenAuthorizable {
     case targetThatNeedsCustomAuth
     case targetDoesNotNeedAuth
 
-    var authorizationType: AuthorizationType {
+    var authorizationType: AuthorizationType? {
         switch self {
             case .targetThatNeedsBearerAuth:
                 return .bearer
@@ -66,7 +82,7 @@ extension YourAPI: TargetType, AccessTokenAuthorizable {
             case .targetThatNeedsCustomAuth:
                 return .custom("CustomAuthorizationType")
             case .targetDoesNotNeedAuth:
-                return .none
+                return nil
             }
         }
 }

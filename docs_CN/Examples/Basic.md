@@ -74,11 +74,11 @@ extension MyService: TargetType {
 // MARK: - Helpers
 private extension String {
     var urlEscaped: String {
-        return addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
     }
 
     var utf8Encoded: Data {
-        return data(using: .utf8)!
+        Data(self.utf8)
     }
 }
 ```
@@ -118,7 +118,7 @@ JSON, images, text, 或者任何您希望从endpoint得到的.
 
 ```swift
 let endpointClosure = { (target: MyService) -> Endpoint in
-    return Endpoint(url: URL(target: target), sampleResponseClosure: {.networkResponse(200, target.sampleData)}, method: target.method, task: target.task)
+    return Endpoint(url: URL(target: target).absoluteString, sampleResponseClosure: {.networkResponse(200, target.sampleData)}, method: target.method, task: target.task)
 }
 ```
 
@@ -135,7 +135,7 @@ let failureEndpointClosure = { (target: MyService) -> Endpoint in
             return .networkResponse(200, target.sampleData)
         }
     }
-    return Endpoint(url: url(target), sampleResponseClosure: sampleResponseClosure, method: target.method, task: target.task)
+    return Endpoint(url: URL(target: target).absoluteString, sampleResponseClosure: sampleResponseClosure, method: target.method, task: target.task)
 }
 ```
 

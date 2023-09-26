@@ -1,5 +1,110 @@
 # Next
 
+### Fixed
+
+- Un-break Package.swift parsing when releasing through Rocket. [#2275](https://github.com/Moya/Moya/pull/2274) by [@AndrewSB](https://github.com/AndrewSB)
+
+# [15.0.1] - 2022-08-11
+
+### Fixed
+
+- Pin dependencies to their major versions only, so no specific minor or patch versions are required. [#2207](https://github.com/Moya/Moya/pull/2207) by [@BasThomas](https://github.com/BasThomas).
+
+# [15.0.0] - 2021-09-04
+
+### Added
+- Added `NetworkLoggerPlugin.default` and `NetworkLoggerPlugin.verbose` to conveniently access the default plugins. [#2095](https://github.com/Moya/Moya/pull/2095) by [@sunshinejr](https://github.com/sunshinejr).
+
+### Changed
+- **Breaking Change** Changed `Hashable` && `Equatable` implementation of `Endpoint` since it was returning false positives. [#2101](https://github.com/Moya/Moya/pull/2101) by [@sunshinejr](https://github.com/sunshinejr).
+- **Breaking Change** `MultiPartFormData` is now `Hashable`. [#2101](https://github.com/Moya/Moya/pull/2101) by [@sunshinejr](https://github.com/sunshinejr).
+- **Breaking Change** `AccessTokenPlugin` now uses `TargetType`, instead of `AuthorizationType`, in the closure to determine the token. Full `MultiTarget` integration added as well. [#2046](https://github.com/Moya/Moya/pull/2046) by [@Coder-ZJQ](https://github.com/Coder-ZJQ).
+- `Target.sampleData` is now automatically implemented as `Data()` with default protocol extension. [#2015](https://github.com/Moya/Moya/pull/2015) by [jdisho](https://github.com/jdisho).
+- **Breaking Change** Minimum version of `RxSwift` is now 6.0. [#2120](https://github.com/Moya/Moya/pull/2120) by [@peagasilva](https://github.com/peagasilva).
+- Moya's Swift minimum version is now Swift 5.2. [#2120](https://github.com/Moya/Moya/pull/2120) by [@peagasilva](https://github.com/peagasilva).
+- Moya now depends on the latest versions of RxSwift, ReactiveSwift & Alamofire. [#2197](https://github.com/Moya/Moya/pull/2197) by [@BasThomas](https://github.com/BasThomas).
+
+### Fixed
+- Fixed an issue where when using `trackInflights` option in certain circumstances would return a cached response for an endpoint that's not really the same. [#2101](https://github.com/Moya/Moya/pull/2101) by [@sunshinejr](https://github.com/sunshinejr).
+- Fixed a crash where Combine Publisher would crash when using stubs.  [#2072](https://github.com/Moya/Moya/pull/2072) by [jshier](https://github.com/jshier).
+- Fixed Unit Tests and CI. [#2187](https://github.com/Moya/Moya/pull/2187) by [OhKanghoon](https://github.com/OhKanghoon).
+- Fixed a race condition that could prevent plugin's `willSend(_:target:)` from being fired. [#2192](https://github.com/Moya/Moya/pull/2192) by [anton-plebanovich](https://github.com/anton-plebanovich).
+
+# [15.0.0-alpha.1] - 2020-07-07
+
+### Added
+- We brought back Combine support! [#2024](https://github.com/Moya/Moya/pull/2024) by [@MaxDesiatov](https://github.com/MaxDesiatov).
+
+### Changed
+- Moya's Swift minimum version is now Swift 5.1. [#1931](https://github.com/Moya/Moya/pull/1931) by [@BasThomas](https://github.com/BasThomas) and [@LucianoPAlmeida](https://github.com/LucianoPAlmeida).
+
+# [14.0.0] - 2020-02-15
+
+### Changed
+- **Breaking Change** Minimum version of `Alamofire` is now 5.0. [#1992](https://github.com/Moya/Moya/pull/1992) by [@sunshinejr](https://github.com/sunshinejr).
+- **Breaking Change** `MultiTarget` now implements `AccessTokenAuthorizable` so that the inner target's `authorizationType` is correctly returned to the `AccessTokenPlugin` when requested. [#1979](https://github.com/Moya/Moya/pull/1979) by [@amaurydavid](https://github.com/amaurydavid).
+
+
+# [14.0.0-beta.6] - 2019-12-09
+
+### Changed
+- **Breaking Change** In `AccessTokenPlugin`, the token closure now takes a `AuthorizationType` as parameter and `AuthorizationType.none` has been removed in favor of using  `AuthorizationType?`. [#1969](https://github.com/Moya/Moya/pull/1969) by [@amaurydavid](https://github.com/amaurydavid).
+
+### Fixed
+- Fixed a data race condition issue and enable TSAN on the test action and CI. [#1952](https://github.com/Moya/Moya/pull/1952) by [@LucianoPAlmeida](https://github.com/LucianoPAlmeida).
+
+# [14.0.0-beta.5] - 2019-10-27
+
+### Changed
+- **Breaking Change** Minimum version of `Alamofire` is now 5.0.0-rc.3. [#1944](https://github.com/Moya/Moya/pull/1944) by [@sunshinejr](https://github.com/sunshinejr).
+
+# [14.0.0-beta.4] - 2019-10-05
+
+### Removed
+- **Breaking Change** Removed Combine extensions for now. Due to problems with weak-linking the framework, it's too difficult to support it with ease using all package managers and also without breaking backwards-compatibility. Probably gonna introduce it once we only support Xcode 11. [#1933](https://github.com/Moya/Moya/pull/1933) by [@sunshinejr](https://github.com/sunshinejr)
+
+# [14.0.0-beta.3] - 2019-09-27
+
+### Fixed
+- Fixed an issue with displaying cURL-formatted request in `NetworkLoggerPlugin`. [#1916](https://github.com/Moya/Moya/pull/1916) by [@sunshinejr](https://github.com/sunshinejr).
+- Fixed an issue that wouldn't display stubbed response body in `NetworkLoggerPlugin`. [#1916](https://github.com/Moya/Moya/pull/1916) by [@sunshinejr](https://github.com/sunshinejr).
+- Fixed an issue where Carthage users using Xcode 11 couldn't install Moya 14. We added weak-linking for the xcodeproj so you might need additional steps for Xcode 10 + Carthage + Moya 14.* users. [#1920](https://github.com/Moya/Moya/pull/1920) by [@fredpi](https://github.com/fredpi) and [@sunshinejr](https://github.com/sunshinejr).
+- Fixed an issue that wouldn't persist `URLRequest` changes (created by plugins) when stubbed. [#1921](https://github.com/Moya/Moya/pull/1921) by [@sunshinejr](https://github.com/sunshinejr).
+- Fixed an issue with SPM integration - it no longer fetches testing libraries and also doesn't create runtime/Xcode Preview crashes. [#1923](https://github.com/Moya/Moya/pull/1923) by [@sunshinejr](https://github.com/sunshinejr).
+
+# [14.0.0-beta.2] - 2019-09-09
+
+### Changed
+- **Breaking Change** Minimum version of `Alamofire` is now 5.0.0-rc.2. [#1912](https://github.com/Moya/Moya/pull/1912) by [@sunshinejr](https://github.com/sunshinejr).
+
+## Added
+- Combine support! [#1904](https://github.com/Moya/Moya/pull/1904) by [@sunshinejr](https://github.com/sunshinejr).
+- Very raw SPM testing support! Thanks to the work on OHHTTPStubs, we can finally start using `swift test` again. [#1896](https://github.com/Moya/Moya/pull/1896) by [@sunshinejr](https://github.com/sunshinejr).
+
+### Changed
+- **Breaking Change** Minimum version of `Alamofire` is now 5.0.0-rc.1. [#1909](https://github.com/Moya/Moya/pull/1909) by [@sunshinejr](https://github.com/sunshinejr).
+- **Breaking Change** The NetworkLoggerPlugin have been reworked to allow more customization about the logged request's components. [#1894](https://github.com/Moya/Moya/pull/1894) by [@amaurydavid](https://github.com/amaurydavid).
+- **Breaking Change** Bumped ReactiveSwift version to 6.1.0. This should only affect Carthage users, but you'll probably want to use 6.1.0 in all of your Xcode 11 projects. [#1896](https://github.com/Moya/Moya/pull/1896) by [@sunshinejr](https://github.com/sunshinejr).
+- `NetworkLoggerPlugin` now logs error when available (using `LogOptions.verbose` or specyfing `errorResponseBody` in your `LogOptions`). [#1880](https://github.com/Moya/Moya/pull/1880) by [@amaurydavid](https://github.com/amaurydavid).
+
+# [14.0.0-alpha.2] - 2019-08-01
+
+## Added
+- `RequestType` now has `sessionHeaders`! These are the headers that are added when the request is added to a session. [#1878](https://github.com/Moya/Moya/pull/1878) by [@sunshinejr](https://github.com/sunshinejr).
+
+### Changed
+- **Breaking Change** Minimum target version are now in line with Alamofire 5. iOS: 10.0, tvOS: 10.0, macOS: 10.12, watchOS: 3.0. [#1810](https://github.com/Moya/Moya/pull/1810) by [@sunshinejr](https://github.com/sunshinejr).
+- **Breaking Change** Minimum version of `Alamofire` is now 5.0.0-beta.7. [#1810](https://github.com/Moya/Moya/pull/1810) by [@sunshinejr](https://github.com/sunshinejr).
+- **Breaking Change** Removed `Result` depndency in favor of `Result` introduced in Swift 5. [#1858](https://github.com/Moya/Moya/pull/1858) by [@larryonoff](https://github.com/larryonoff).
+- **Breaking Change** Added `TargetType` parameter in the output of `NetworkLoggerPlugin`. [#1866](https://github.com/Moya/Moya/pull/1866) by [@hasankose](https://github.com/hasankose).
+- `NetworkLoggerPlugin` uses the newly added `sessionHeaders` and now logs all the headers that the request will produce. [#1878](https://github.com/Moya/Moya/pull/1878) by [@sunshinejr](https://github.com/sunshinejr).
+
+# [14.0.0-alpha.1] - 2019-05-14
+
+### Changed
+- **Breaking Change** Minimum version of `RxSwift` is now 5.0. [#1846](https://github.com/Moya/Moya/pull/1846) by [@LucianoPAlmeida](https://github.com/LucianoPAlmeida).
+- **Breaking Change** Minimum version of `ReactiveSwift` is now 6.0. [#1849](https://github.com/Moya/Moya/pull/1849) by [@sunshinejr](https://github.com/sunshinejr).``
+
 # [13.0.1] - 2019-05-01
 
 ### Fixed
